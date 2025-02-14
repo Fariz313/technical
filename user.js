@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
-const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const validator = require('validator');
 
 const app = express();
@@ -36,7 +36,12 @@ app.post('/users', async (req, res) => {
         return res.status(400).json({ message: 'Password must contain at least one number and one special character' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const salt = crypto.randomBytes(16).toString('hex');
+    const iterations = 10000;
+    const keylen = 64;
+    const digest = 'sha512';
+    const hashedPassword = crypto.pbkdf2Sync(password, salt, iterations, keylen, digest).toString('hex');
+
 
     const code = generateCode();
 
